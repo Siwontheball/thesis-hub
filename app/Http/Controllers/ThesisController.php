@@ -32,7 +32,7 @@ class ThesisController extends Controller
             'pdf' => 'required|mimes:pdf|max:10240',
             'abstract' => 'required|max:255',
         ]);
-        $path = $request->file('pdf')->store('theses', 'public');
+        $path = $request->file('pdf')->store('theses', 's3');
 
         Thesis::create([
             'user_id' => auth()->id(),
@@ -65,8 +65,8 @@ class ThesisController extends Controller
             'abstract' => 'required|max:255',]);
 
         if ($request->hasFile('pdf')) {
-            Storage::disk('public')->delete($thesis->pdf_path);
-            $path = $request->file('pdf')->store('theses', 'public');
+            Storage::disk('s3')->delete($thesis->pdf_path);
+            $path = $request->file('pdf')->store('theses', 's3');
             $thesis->pdf_path = $path;
         }
 
@@ -83,7 +83,7 @@ class ThesisController extends Controller
 
     public function destroy(Thesis $thesis){
         if ($thesis->user_id !== auth()->id()) { abort(403); }
-        Storage::disk('public')->delete($thesis->pdf_path);
+        Storage::disk('s3')->delete($thesis->pdf_path);
         $thesis->delete();
 
         return redirect()->route('theses.index')->with('success', '論文を削除しました。');
